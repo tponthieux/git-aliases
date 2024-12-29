@@ -66,7 +66,7 @@ def example():
     output += repo.run("git pluck 0") + '\n'
 
     repo.teardown()
-    return output.strip()
+    return repo.clean(output)
 
 def test():
     """Test the Git pluck alias."""

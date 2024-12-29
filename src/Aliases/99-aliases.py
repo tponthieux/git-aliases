@@ -29,7 +29,7 @@ def example():
     output = repo.run("git aliases")
 
     repo.teardown()
-    return output.strip()
+    return repo.clean(output)
 
 def test():
     """Test a Git alias."""

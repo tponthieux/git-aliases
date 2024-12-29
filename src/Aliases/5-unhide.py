@@ -43,15 +43,15 @@ def example():
     # Additional setup
 
     # Hide the changes
-    output = repo.porcelain_status() + '\n'
+    output = repo.run("git state") + '\n'
     output += repo.run("git hide") + '\n'
     output += repo.run("git stash list") + '\n'
-    output += repo.porcelain_status() + '\n'
+    output += repo.run("git state") + '\n'
     output += repo.run("git unhide") + '\n'
-    output += repo.porcelain_status()
+    output += repo.run("git state")
 
     repo.teardown()
-    return output.strip().replace("\x1b[31m", "").replace("\x1b[32m", "").replace("\x1b[0m", "")
+    return repo.clean(output)
 
 def test():
     """Test the Git unhide alias."""
@@ -72,18 +72,18 @@ def test():
     repo.run(module.command())
 
     repo.print("git stash list")
-    print(repo.porcelain_status())
+    repo.print("git state")
 
     repo.print("git hide")
     repo.print("git stash list")
-    print(repo.porcelain_status())
+    repo.print("git state")
 
     # Unhide the changes
     output = repo.print("git unhide")
     Verify(output).contains(['Unhidden:', 'file-1.txt'])
 
     repo.print("git stash list")
-    print(repo.porcelain_status())
+    repo.print("git state")
 
     repo.teardown()
 

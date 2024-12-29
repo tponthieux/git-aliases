@@ -42,22 +42,23 @@ def example():
     local.run("git branch --set-upstream-to=origin/dev dev")
 
     # Create a feature branch on local and push it to remote
-    local.print("git branch")
-    local.print("git checkout -b feature-dev-0dc6a7a1 dev")
-    local.print("git branch")
+    local.run("git branch")
+    local.run("git checkout -b feature-dev-0dc6a7a1 dev")
+    local.run("git branch")
     local.setup_second_commit()
     local.run("git push --set-upstream origin feature-dev-0dc6a7a1")
 
     # Merge the feature branch on the remote repository
-    remote.print("git merge --ff-only feature-dev-0dc6a7a1")
+    remote.run("git merge --ff-only feature-dev-0dc6a7a1")
 
     # Refresh local
     local.setup_third_changes()
-    output = local.run("git refresh")
+    output = local.run("git branch") + '\n'
+    output += local.run("git refresh")
 
     local.teardown()
     remote.teardown()
-    return output.strip()
+    return local.clean(output)
 
 def test():
     """Test the Git refresh alias."""

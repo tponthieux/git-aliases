@@ -1,15 +1,16 @@
 import os
 import shutil
 import subprocess
+
 from pathlib import Path
 
 BRACKETS = False
 
 class RepositoryFixture:
-    """A class for managing a Git repository."""
+    """Creates an isolated Git repository for testing Git aliases and commands.
+    Handles setup, manipulation and teardown of the test repository."""
 
     def __init__(self, name):
-        # self.name = name
         self.path = Path('repos', name)
         self.setup()
 
@@ -19,7 +20,6 @@ class RepositoryFixture:
             shutil.rmtree(self.path)
 
         os.makedirs(self.path, exist_ok=True)
-        # self.run("git config init.defaultBranch dev")
         self.run("git init")
         self.run("git branch -M dev")
 
@@ -65,65 +65,22 @@ class RepositoryFixture:
         """Run a command in this repository and print the output."""
         output = self.run(cmd)
         print(output)
-        # print()
+        return output
+
+    def clean(self, output):
+        """Remove all ANSI color/format codes from the output."""
+        output = output.strip()
+        output = output.replace("\x1b[31m", "")    # Red
+        output = output.replace("\x1b[32m", "")    # Green
+        output = output.replace("\x1b[33m", "")    # Yellow
+        output = output.replace("\x1b[1;33m", "")  # Bold Yellow
+        output = output.replace("\x1b[m", "")      # Reset
+        output = output.replace("\x1b[0m", "")     # Reset
         return output
 
     def tree(self):
         output = self.run('tree')
         return output.replace("\n.\n", f"\n{self.path}:\n")
-
-    def porcelain_status(self):
-        """Get the status of the repository in porcelain format.
-        Returns a machine-readable status where each line has a two-character status code:
-          * first character represents the status in the staging area
-          * second character represents the status in the working directory
-        """
-        output = self.run("git status --porcelain")
-
-        explanations = {
-            # Unstaged changes (working directory)
-            ' M': 'unstaged: modified file',
-            ' D': 'unstaged: deleted file',
-            '??': 'untracked: added new file',
-
-            # Combined states
-            'MM': 'staged+unstaged: staged modifications plus unstaged modifications',
-            'AM': 'staged+unstaged: staged new file plus unstaged modifications',
-
-            # Staged changes (index)
-            'A ': 'staged: added new file',
-            'M ': 'staged: modified file',
-            'D ': 'staged: deleted file',
-            'R ': 'staged: renamed file',
-
-            # Merge conflicts
-            'UU': 'conflict: both branches made separate overlapping changes',
-            'DD': 'conflict: path deleted in both but different file history',
-            'AU': 'conflict: our new file conflicts with their existing path',
-            'UA': 'conflict: their new file conflicts with our existing path',
-        }
-
-        # add the comment explanation to the output
-        annotated_lines = []
-        lines = output.strip().split('\n')
-
-        # Handle empty output case
-        if len(lines) == 1:
-            return output
-
-        padding = max([len(x) for x in lines[1:]]) + 4
-
-        for line in lines:
-            code = line[:2]
-            if code in explanations:
-                explanation = explanations[code]
-                annotated_lines.append(f'{line:<{padding}} # {explanation}')
-            else:
-                annotated_lines.append(line)
-
-        output = '\n'.join(annotated_lines)
-        output = output if output.endswith('\n') else output + '\n'
-        return f'[{output}]' if BRACKETS else output
 
     def write_file(self, filename, content):
         with open(os.path.join(self.path, filename), 'w') as f:
@@ -201,8 +158,8 @@ if __name__ == "__main__":
     repo = RepositoryFixture('repo-test')
     repo.setup_first_commit()
     repo.setup_second_commit()
-    print(repo.porcelain_status()) # clean repo
+    repo.print("git state") # clean repo
     repo.setup_third_changes()
     print(repo.tree())
-    print(repo.porcelain_status()) # uncommitted changes
+    repo.print("git state") # uncommitted changes
     repo.teardown()

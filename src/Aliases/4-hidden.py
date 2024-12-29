@@ -38,16 +38,16 @@ def example():
     repo.write_file('file-2.txt', 'Unstaged change for file two.\n')
 
     # Get the console output
-    output = repo.run("git status --porcelain") + '\n'
+    output = repo.run("git state") + '\n'
     output += repo.run('git add file-2.txt') + '\n'
-    output += repo.run("git status --porcelain") + '\n'
+    output += repo.run("git state") + '\n'
     output += repo.run("git hide") + '\n'
-    output += repo.run("git status --porcelain") + '\n'
+    output += repo.run("git state") + '\n'
     output += repo.run("git stash list") + '\n'
     output += repo.run("git hidden")
 
     repo.teardown()
-    return output.strip().replace("\x1b[31m", "").replace("\x1b[0m", "")
+    return repo.clean(output)
 
 def test():
     """Test the Git hidden alias."""

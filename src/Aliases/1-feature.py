@@ -1,5 +1,6 @@
 import os
 import sys
+import importlib
 from pathlib import Path
 
 # Local imports
@@ -16,7 +17,7 @@ def description():
 
 def command():
     cmd = r"""
-    git config --global alias.feature '!git status --short && git checkout -b feature-$(git branch --show-current)-$(openssl rand -hex 4) 2>&1'
+    git config --global alias.feature '!git state && git checkout -b feature-$(git branch --show-current)-$(openssl rand -hex 4) 2>&1'
     """
     return cmd.strip()
 
@@ -29,13 +30,17 @@ def example():
     repo.stage_file_two()
     repo.run(command())
 
+    # Add the hide alias dependency
+    module = importlib.import_module('src.Aliases.9-state')
+    repo.run(module.command())
+
     # Get the console output
     output = repo.run("git branch") + "\n"
     output += repo.run("git feature") + "\n"
     output += repo.run("git branch")
 
     repo.teardown()
-    return output.strip()
+    return repo.clean(output)
 
 def test():
     """Test the Git feature alias."""
@@ -46,6 +51,10 @@ def test():
     repo.setup_second_changes()
     repo.stage_file_two()
     repo.run(command())
+
+    # Add the hide alias dependency
+    module = importlib.import_module('src.Aliases.9-state')
+    repo.run(module.command())
 
     # Create a feature branch
     output = repo.print("git feature")

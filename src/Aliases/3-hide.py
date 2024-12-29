@@ -37,8 +37,12 @@ def example():
     module = importlib.import_module('src.Aliases.5-unhide')
     repo.run(module.command())
 
+    # Make sure the state alias is available
+    module = importlib.import_module('src.Aliases.9-state')
+    repo.run(module.command())
+
     # Get the console output
-    output = repo.porcelain_status() + "\n"
+    output = repo.run("git state") + "\n"
     output += repo.run("git hide") + "\n"
     output += repo.run("git stash list") + "\n"
 
@@ -47,8 +51,8 @@ def example():
     repo.stage_file_two()
 
     # Demonstrate stashing more changes
-    # output += repo.porcelain_status() + "\n"
-    output += repo.run('git status --short') + "\n"
+    # output += repo.run("git state") + "\n"
+    output += repo.run('git state') + "\n"
     output += repo.run("git hide") + "\n"
     output += repo.run("git stash list") + "\n"
 
@@ -57,7 +61,7 @@ def example():
     output += repo.run("git stash list")
 
     repo.teardown()
-    return output.strip().replace("\x1b[31m", "").replace("\x1b[32m", "").replace("\x1b[0m", "")
+    return repo.clean(output)
 
 def test():
     """Test the Git hide alias."""
@@ -72,7 +76,15 @@ def test():
     module = importlib.import_module('src.Aliases.4-hidden')
     repo.run(module.command())
 
-    print(repo.porcelain_status())
+    # Make sure the unhide alias is available
+    module = importlib.import_module('src.Aliases.5-unhide')
+    repo.run(module.command())
+
+    # Make sure the state alias is available
+    module = importlib.import_module('src.Aliases.9-state')
+    repo.run(module.command())
+
+    repo.print("git state")
 
     output = repo.print('cat file-1.txt')
     Verify(output).contains('First revision for file one.')

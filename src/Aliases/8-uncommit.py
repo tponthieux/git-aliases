@@ -35,7 +35,7 @@ def example():
     output += repo.run("git uncommit")
 
     repo.teardown()
-    return output.strip().replace("\x1b[33m", "").replace("\x1b[m", "")
+    return repo.clean(output)
 
 def test():
     """Test a Git alias."""
@@ -60,7 +60,7 @@ def test():
     Verify(output).contains("Third committed change")
 
     # Check that there are now uncommitted changes
-    output = repo.porcelain_status()
+    output = repo.run("git state")
     print(output)
     Verify(output).contains("M  file-1.txt")
     Verify(output).contains("M  file-2.txt")
@@ -82,7 +82,7 @@ def test():
     Verify(output).lacks("Third committed change")
 
     # Check that there are still uncommitted changes
-    output = repo.porcelain_status()
+    output = repo.run("git state")
     print(output)
     Verify(output).contains("M  file-1.txt")
     Verify(output).contains("M  file-2.txt")

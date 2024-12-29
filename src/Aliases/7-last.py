@@ -38,7 +38,7 @@ def example():
     output = repo.run('git last')
 
     repo.teardown()
-    return output.strip().replace("\x1b[33m", "").replace("\x1b[m", "")
+    return repo.clean(output)
 
 def test():
     """Test the Git last alias."""
